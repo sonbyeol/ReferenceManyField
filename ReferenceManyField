@@ -1,0 +1,25 @@
+posts  "userId": 1 -> users "id"
+1개의 users -> 여러개의 posts 
+
+
+const AuthorShow = () => (
+    <Show>
+        <SimpleShowLayout>
+            <TextField source="first_name" />
+            <TextField source="last_name" />
+            <ReferenceManyField reference="books" target="author_id" label="Books">
+              <Datagrid>
+                <TextField source="title" />
+                <DateField source="published_at" />
+              </Datagrid>
+            </ReferenceManyField>
+        </SimpleShowLayout>
+    </Show>
+);
+
+<ReferenceManyField reference="posts" target="userId" label="posts" filter={{ id: "1" }}>
+<Datagrid>
+	<TextField source="id" />
+	<TextField source="title" />
+</Datagrid>
+</ReferenceManyField>
