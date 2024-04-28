@@ -1,0 +1,55 @@
+	@GetMapping("/logs/{id}")
+    public List<TC> getTcValues(@PathVariable("id") int logId, HttpServletResponse response) {
+	
+		List<Log> logs = new ArrayList<>();
+	    logs.add(new Log(1, "Sample header 1", "TC123456 body111111111111"));
+
+	    // TC 코드 추출
+	    String tc_code = "";
+	    String body1 = "";
+	    for (Log log : logs) {
+	        if (log.getId() == logId) {
+	            tc_code = log.getBody().substring(0, 8);
+	            body1 = log.getBody().substring(8).trim();
+	            break;
+	        }
+	    }
+	    System.out.println(tc_code);
+	    System.out.println(body1);
+	    
+		List<TC> tcValues = new ArrayList<>();
+		tcValues.add(new TC("TC123456", 1, 1,""));
+		tcValues.add(new TC("TC123456", 2, 2,""));
+		tcValues.add(new TC("TC123456", 3, 3,""));
+	    
+		// tcValues 를 dataseq 대로 소팅
+        Collections.sort(tcValues, Comparator.comparingInt(TC::getDataseq));
+        
+		// 각 TC 객체의 value 설정
+        int startIndex = 0;
+        
+	    for (TC tc : tcValues) {
+	        String id = tc.getId();
+	        int datasize = tc.getDatasize();
+	        String value = "";
+
+            // 데이터 파싱
+            if (startIndex >= body1.length()) {
+                break; // 문자열 끝에 도달하면 반복문 종료
+            }
+            int endIndex = Math.min(startIndex + datasize, body1.length()); // endIndex는 문자열 끝을 넘어가지 않도록 설정
+            value = body1.substring(startIndex, endIndex).trim();
+            startIndex = endIndex; // 다음 시작 인덱스 설정
+
+	        // value를 tc에 설정
+	        tc.setValue(value);
+	    }
+
+        // Content-Range 헤더 설정
+        String contentRange = "items 0-" + (tcValues.size() - 1) + "/" + tcValues.size();
+        response.setHeader("Content-Range", contentRange);
+        // 클라이언트에 노출할 추가적인 응답 헤더를 지정합니다.
+        response.setHeader("Access-Control-Expose-Headers", "Content-Range");
+
+        return tcValues;
+    }
